@@ -14,9 +14,9 @@ defmodule GetPwd.Application do
     IO.inspect user
     IO.inspect user_drv
     IO.inspect shell
-    IO.inspect :erlang.group_leader(shell, self)
+    IO.inspect :erlang.group_leader(shell, self())
     username = IO.gets(:standard_io, "Username: ")
-    IO.inspect :erlang.group_leader(self, shell)
+    IO.inspect :erlang.group_leader(self(), shell)
     IO.inspect username
     IO.inspect username
     IO.inspect username
@@ -31,4 +31,5 @@ defmodule GetPwd.Application do
     opts = [strategy: :one_for_one, name: GetPwd.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
 end
