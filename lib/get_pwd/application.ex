@@ -8,6 +8,18 @@ defmodule GetPwd.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    user = :erlang.whereis(:user)
+    [{:user_drv, user_drv}] = :group.interfaces(user)
+    [{:current_group, shell}] = :user_drv.interfaces(user_drv)
+    IO.inspect user
+    IO.inspect user_drv
+    IO.inspect shell
+    IO.inspect :erlang.group_leader(shell, self)
+    username = IO.gets(:standard_io, "Username: ")
+    IO.inspect :erlang.group_leader(self, shell)
+    IO.inspect username
+    IO.inspect username
+    IO.inspect username
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: GetPwd.Worker.start_link(arg1, arg2, arg3)
