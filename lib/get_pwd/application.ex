@@ -5,25 +5,45 @@ defmodule GetPwd.Application do
 
   use Application
 
+  defp get_shell() do
+    user = :erlang.whereis(:user)
+
+    case :group.interfaces(user) do
+      [{:user_drv, user_drv}] ->
+        [{:current_group, shell}] = :user_drv.interfaces(user_drv)
+        shell
+      [] ->
+        IO.puts ":group.interfaces(user) ret: empty ..."
+        case :user.interfaces(user) do
+          [{:shell, shell}] ->
+            shell
+          _ ->
+            IO.puts ":user.interfaces(user) ret: empty ..."
+            nil
+        end
+      _ -> nil
+    end
+  end
+
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    user = :erlang.whereis(:user)
-    [{:user_drv, user_drv}] = :group.interfaces(user)
-    [{:current_group, shell}] = :user_drv.interfaces(user_drv)
-    IO.inspect user
-    IO.inspect user_drv
-    IO.inspect shell
-    IO.inspect :erlang.group_leader(shell, self())
+    shell = get_shell()
+    shell && :erlang.group_leader(shell, self())
+
     username = IO.gets(:standard_io, "Username: ")
-    IO.inspect :erlang.group_leader(self(), shell)
-    IO.inspect username
-    IO.inspect username
-    IO.inspect username
+    # IO.write :standard_io, "Username: "
+    # username = :io.get_password() |> to_string
+    password = IO.gets(:standard_io, "Password: ")
+    # IO.write :standard_io, "Password: "
+    # password = :io.get_password() |> to_string
+
+    shell && :erlang.group_leader(self(), shell)
+
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: GetPwd.Worker.start_link(arg1, arg2, arg3)
-      worker(GetPwd.KeyHolder, []),
+      worker(GetPwd.KeyHolder, [username, password]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
